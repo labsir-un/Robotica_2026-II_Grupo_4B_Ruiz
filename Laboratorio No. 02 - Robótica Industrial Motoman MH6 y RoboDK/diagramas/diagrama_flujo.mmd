@@ -1,0 +1,28 @@
+flowchart TD
+    A([Inicio]) --> B["Conectar con RoboDK<br/>Robolink()"]
+    B --> C[Seleccionar robot<br/>Motoman MH6]
+    C --> D{¿Robot válido?}
+    D -- No --> X1([Error: robot no válido])
+    D -- Sí --> E{"¿robot.ConnectedState()?"}
+    E -- No --> X2([Error: robot no conectado])
+    E -- Sí --> F[Robot conectado correctamente]
+    F --> J{¿Existe Frame_from_Target1?}
+    J -- No --> X3([Error: frame no encontrado])
+    J -- Sí --> K[Asignar frame y herramienta<br/>velocidad 300 mm/s, blending 5 mm]
+    K --> L[MoveJ a home1]
+    L --> M["Calcular b = ln(r_final / r_inicial) / (6π)"]
+    M --> N["MoveJ sobre el centro (0, 0, −50)"]
+    N --> O["MoveL a la superficie (0, 0, 0)"]
+    O --> P[i = 0]
+    P --> Q["θ = 6π·i / 500<br/>r = 10·e<sup>bθ</sup><br/>x = r·cos θ , y = r·sin θ"]
+    Q --> R["MoveL a (x, y, 0)"]
+    R --> S{¿i < 500?}
+    S -- Sí --> T[i = i + 1] --> Q
+    S -- No --> U["MoveL a (x, y, z_surface + z_safe)"]
+    U --> V[Abrir Juan_Carlos.csv]
+    V --> W{¿Quedan filas?}
+    W -- Sí --> Y{¿Fila con datos?}
+    Y -- Sí --> Z["Agregar punto (x + 60, y, z) al trazo"] --> W
+    Y -- "No (fila vacía)" --> AA["MoveJ al inicio del contorno en Z = −5<br/>MoveL a Z = 0<br/>MoveL por cada punto del contorno<br/>MoveL a Z = −5, vaciar trazo"] --> W
+    W -- No --> AD[MoveJ a home1]
+    AD --> AE([Fin: figura completada])
